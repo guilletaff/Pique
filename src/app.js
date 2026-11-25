@@ -17,6 +17,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/pistas', require('./routes/pista.routes'));
+app.use('/api/reservas', require('./routes/reserva.routes'));
 // Aquí se irán montando las rutas de los demás módulos, por ejemplo:
 // app.use('/api/pistas', require('./routes/pistas.routes'));
 
