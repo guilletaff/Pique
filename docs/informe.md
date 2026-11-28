@@ -1,9 +1,9 @@
 # Pique — Informe técnico
 
 **Asignatura:** Programación en servidores web · 4.º de Ingeniería Informática · CUNEF Universidad
-**Grupo:** [Nombre y apellidos 1] · [Nombre y apellidos 2] · [Nombre y apellidos 3]
+**Grupo:** Guillermo Taffouraud · Oriol García Miró · Rodrigo González
 **Repositorio:** https://github.com/guilletaff/Pique
-**Fecha:** [fecha de entrega]
+**Fecha:** 1 de diciembre de 2026
 
 ---
 
@@ -251,8 +251,6 @@ Se probó la aplicación de extremo a extremo contra una base de datos PostgreSQ
 | 4 | Frontend |
 | 5 | Seguridad y documentación |
 | 6 | Informe, presentación y entrega |
-
-[Completar con el reparto real entre los miembros del grupo.]
 
 ## 8. Conclusiones
 

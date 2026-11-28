@@ -92,15 +92,15 @@ Estado: `[x]` hecho, `[ ]` pendiente.
 
 ### Resumen
 
-| Fase | Qué es | Responsable | Estado |
-|------|--------|-------------|--------|
-| 0 | Preparación (repo, Docker, esqueleto) | Oriol | Hecha |
-| 1 | Base de datos y autenticación | Oriol | Hecha |
-| 2 | Pistas y reservas | Oriol | Hecha |
-| 3 | Partidos y ranking | Compañero (por decidir) | Hecha |
-| 4 | Frontend | Compañero (por decidir) | Hecha |
-| 5 | Seguridad y documentación de la API | Todo el grupo | Hecha |
-| 6 | Entrega: informe, presentación y Canvas | Todo el grupo | Informe y guion hechos; faltan diapositivas y Canvas |
+| Fase | Qué es | Estado |
+|------|--------|--------|
+| 0 | Preparación (repo, Docker, esqueleto) | Hecha |
+| 1 | Base de datos y autenticación | Hecha |
+| 2 | Pistas y reservas | Hecha |
+| 3 | Partidos y ranking | Hecha |
+| 4 | Frontend | Hecha |
+| 5 | Seguridad y documentación de la API | Hecha |
+| 6 | Entrega: informe, presentación y Canvas | Informe y guion hechos; faltan diapositivas y Canvas |
 
 Las fases 0, 1 y 2 están en `main`. Las fases 3, 4 y 5 están en la rama `feature/ranking`, pendientes de Pull Request y revisión.
 
@@ -111,7 +111,7 @@ Las fases 0, 1 y 2 están en `main`. Las fases 3, 4 y 5 están en la rama `featu
 - [x] Archivo `.env.example` con las variables necesarias.
 - [x] README con la estructura y el flujo de Git.
 
-## Fase 1. Base de datos y autenticación (Oriol) — hecha
+## Fase 1. Base de datos y autenticación — hecha
 
 Rama: `feature/auth`
 
@@ -170,7 +170,7 @@ Dentro del controlador, el usuario que hace la petición está en `req.usuario.i
 - `partidos`: id, fecha, creado_por, sets_equipo1, sets_equipo2
 - `partido_jugadores`: partido_id, usuario_id, equipo (1 o 2)
 
-## Fase 2. Pistas y reservas (Oriol) — hecha
+## Fase 2. Pistas y reservas — hecha
 
 Rama: `feature/reservas`
 
@@ -201,7 +201,7 @@ Todos necesitan sesión iniciada.
 | GET | `/api/reservas?pista_id=1&fecha=2026-12-10` | Franjas ocupadas de una pista en un día | Con sesión |
 | DELETE | `/api/reservas/:id` | Cancelar una reserva | Dueño o admin |
 
-## Fase 3. Partidos y ranking (responsable: por decidir) — hecha
+## Fase 3. Partidos y ranking — hecha
 
 Rama: `feature/ranking`
 
@@ -226,7 +226,7 @@ Todos necesitan sesión iniciada. Detalle y ejemplos en `docs/API.md`.
 | DELETE | `/api/partidos/:id` | Borrar un partido | Quien lo registró o admin |
 | GET | `/api/ranking` | Clasificación | Con sesión |
 
-## Fase 4. Frontend (responsable: por decidir) — hecha
+## Fase 4. Frontend — hecha
 
 Carpeta: `src/public`
 
@@ -247,7 +247,7 @@ Carpeta: `src/public`
 
 ## Fase 6. Entrega (todo el grupo) — en curso
 
-- [x] Informe técnico: `docs/informe.md` y `docs/informe.pdf`. Falta poner los nombres del grupo, la fecha y el reparto real del trabajo.
+- [x] Informe técnico: `docs/informe.md` y `docs/informe.pdf`. Con nombres y fecha.
 - [x] Guion de la presentación y de la demo: `docs/presentacion.md`.
 - [ ] Diapositivas de la presentación (15 minutos con demostración funcional).
 - [ ] Indicar los miembros del grupo en Canvas.
