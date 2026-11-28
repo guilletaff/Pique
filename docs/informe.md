@@ -240,7 +240,6 @@ Se probó la aplicación de extremo a extremo contra una base de datos PostgreSQ
 
 - Repositorio en GitHub con `main` protegida: solo se fusiona mediante **Pull Request revisada** por otro miembro.
 - Una rama por tarea (`feature/auth`, `feature/auth-limite`, `feature/reservas`, `feature/ranking`...) y commits pequeños con prefijo (`feat:`, `fix:`, `docs:`).
-- El documento `PLAN.md` recoge el contexto, las decisiones técnicas, las convenciones y el estado de cada fase.
 
 | Fase | Contenido |
 |---|---|
