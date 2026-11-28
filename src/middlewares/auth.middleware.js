@@ -1,11 +1,13 @@
 const jwt = require('jsonwebtoken');
 
-// Comprueba que hay una sesión válida y deja los datos en req.usuario
+// Comprueba que la petición trae un JWT válido en la cabecera
+// Authorization: Bearer <token> y deja los datos del usuario en req.usuario
 function verificarToken(req, res, next) {
-  const token = req.cookies.token;
-  if (!token) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Hay que iniciar sesión' });
   }
+  const token = authHeader.split(' ')[1];
   try {
     req.usuario = jwt.verify(token, process.env.JWT_SECRET);
     next();
