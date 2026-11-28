@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pique · Partidos</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/estilos.css">
+  <script src="/js/comun.js" defer></script>
+  <script src="/js/partidos.js" defer></script>
+</head>
+<body>
+  <header></header>
+  <main>
+    <h1>Partidos</h1>
+
+    <div class="rejilla-2">
+      <section class="tarjeta">
+        <h2>Registrar un partido</h2>
+        <div id="mensaje-form"></div>
+        <form id="form-partido" novalidate>
+          <div class="campo">
+            <label for="partido-fecha">Fecha</label>
+            <input type="date" id="partido-fecha" required>
+          </div>
+
+          <fieldset class="equipo-form">
+            <legend>Equipo 1</legend>
+            <div class="fila">
+              <select id="jugador-1a" aria-label="Equipo 1, jugador 1"></select>
+              <select id="jugador-1b" aria-label="Equipo 1, jugador 2"></select>
+            </div>
+            <div class="campo" style="margin:.6rem 0 0">
+              <label for="sets-1">Sets ganados</label>
+              <input type="number" id="sets-1" min="0" max="3" value="2" required>
+            </div>
+          </fieldset>
+
+          <fieldset class="equipo-form">
+            <legend>Equipo 2</legend>
+            <div class="fila">
+              <select id="jugador-2a" aria-label="Equipo 2, jugador 1"></select>
+              <select id="jugador-2b" aria-label="Equipo 2, jugador 2"></select>
+            </div>
+            <div class="campo" style="margin:.6rem 0 0">
+              <label for="sets-2">Sets ganados</label>
+              <input type="number" id="sets-2" min="0" max="3" value="0" required>
+            </div>
+          </fieldset>
+
+          <button type="submit" class="boton boton-ancho">Guardar partido</button>
+        </form>
+      </section>
+
+      <section class="tarjeta">
+        <h2>Cómo funciona</h2>
+        <ul>
+          <li>Los partidos son 2 contra 2, con 4 jugadores distintos.</li>
+          <li>El resultado se apunta en sets y no puede haber empate.</li>
+          <li>Solo puedes registrar partidos en los que has jugado.</li>
+          <li>Cada victoria suma <strong>3 puntos</strong> en el <a href="ranking.html">ranking</a>.</li>
+          <li>Si te equivocas, puedes borrar los partidos que registraste tú.</li>
+        </ul>
+      </section>
+    </div>
+
+    <section class="tarjeta">
+      <div class="fila" style="align-items:center">
+        <h2 style="margin:0">Historial</h2>
+        <div>
+          <label for="filtro-jugador" class="oculto">Filtrar por jugador</label>
+          <select id="filtro-jugador"></select>
+        </div>
+      </div>
+      <div id="mensaje-lista"></div>
+      <ul id="lista-partidos" class="lista"></ul>
+    </section>
+  </main>
+</body>
+</html>

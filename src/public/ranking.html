@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pique · Ranking</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/estilos.css">
+  <script src="/js/comun.js" defer></script>
+  <script src="/js/ranking.js" defer></script>
+</head>
+<body>
+  <header></header>
+  <main>
+    <h1>Ranking de la liga</h1>
+    <p class="detalle">3 puntos por victoria. En caso de empate a puntos, manda la diferencia de sets.</p>
+    <div id="mensaje"></div>
+
+    <section class="tarjeta tabla-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th class="num">#</th>
+            <th>Jugador</th>
+            <th class="num" title="Partidos jugados">PJ</th>
+            <th class="num" title="Partidos ganados">PG</th>
+            <th class="num" title="Partidos perdidos">PP</th>
+            <th class="num" title="Sets a favor">SF</th>
+            <th class="num" title="Sets en contra">SC</th>
+            <th class="num">Puntos</th>
+          </tr>
+        </thead>
+        <tbody id="tabla-ranking"></tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>
