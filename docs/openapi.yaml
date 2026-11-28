@@ -1,0 +1,874 @@
+openapi: 3.0.1
+info:
+  title: Pique API
+  description: >
+    API REST de Pique, la aplicación web para organizar una liga de pádel entre
+    amigos: pistas, reservas, partidos y ranking.
+
+    Las rutas protegidas necesitan un JWT en la cabecera
+    `Authorization: Bearer <token>`. El token se obtiene con
+    `POST /api/auth/login` o `POST /api/auth/register` y caduca a las 2 horas.
+    Para probarlas aquí, pulsa **Authorize** y pega el token.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Servidor local (Docker)
+
+tags:
+  - name: auth
+    description: Registro, inicio y cierre de sesión
+  - name: pistas
+    description: Pistas del club (crear, editar y desactivar solo admin)
+  - name: reservas
+    description: Reservas de pistas sin solapamientos
+  - name: partidos
+    description: Partidos jugados (2 contra 2)
+  - name: ranking
+    description: Clasificación de la liga
+  - name: usuarios
+    description: Lista de jugadores
+
+paths:
+  /api/health:
+    get:
+      summary: Comprobar que el servidor está vivo
+      responses:
+        '200':
+          description: El servidor responde
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  # ---------- auth ----------
+  /api/auth/register:
+    post:
+      tags: [auth]
+      summary: Registrar un jugador nuevo
+      description: Todos los usuarios nuevos tienen rol `jugador`; el rol no se acepta del cuerpo.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Registro'
+      responses:
+        '201':
+          description: Usuario creado. Devuelve el token y los datos del usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespuestaAuth'
+        '400':
+          $ref: '#/components/responses/PeticionIncorrecta'
+        '409':
+          description: Ya existe un usuario con ese email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+  /api/auth/login:
+    post:
+      tags: [auth]
+      summary: Iniciar sesión
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+      responses:
+        '200':
+          description: Credenciales correctas. Devuelve el token y los datos del usuario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RespuestaAuth'
+        '400':
+          $ref: '#/components/responses/PeticionIncorrecta'
+        '401':
+          description: Email o contraseña incorrectos (mismo mensaje en ambos casos)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+  /api/auth/logout:
+    post:
+      tags: [auth]
+      summary: Cerrar sesión
+      description: >
+        El servidor no guarda sesiones (JWT stateless): cerrar sesión consiste
+        en que el cliente borre su token. El endpoint hace explícito el flujo.
+      responses:
+        '200':
+          description: Sesión cerrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensaje'
+
+  /api/auth/me:
+    get:
+      tags: [auth]
+      summary: Datos del usuario con sesión iniciada
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Usuario actual
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+  # ---------- pistas ----------
+  /api/pistas:
+    get:
+      tags: [pistas]
+      summary: Listar pistas
+      description: Los jugadores solo ven las pistas activas; el administrador las ve todas.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de pistas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pista'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+    post:
+      tags: [pistas]
+      summary: Crear una pista (solo admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NuevaPista'
+      responses:
+        '201':
+          description: Pista creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pista'
+        '400':
+          $ref: '#/components/responses/PeticionIncorrecta'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/SinPermiso'
+        '409':
+          description: Ya existe una pista con ese nombre
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+  /api/pistas/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [pistas]
+      summary: Obtener una pista
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: La pista
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pista'
+        '400':
+          $ref: '#/components/responses/PeticionIncorrecta'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+    put:
+      tags: [pistas]
+      summary: Editar una pista (solo admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/NuevaPista'
+                - type: object
+                  required: [activa]
+                  properties:
+                    activa:
+                      type: boolean
+                      example: true
+      responses:
+        '200':
+          description: Pista actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pista'
+        '400':
+          $ref: '#/components/responses/PeticionIncorrecta'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/SinPermiso'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '409':
+          description: Ya existe una pista con ese nombre
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+    delete:
+      tags: [pistas]
+      summary: Desactivar una pista (solo admin)
+      description: No se borra (se perderían sus reservas); se marca como no activa.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Pista desactivada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pista'
+        '400':
+          $ref: '#/components/responses/PeticionIncorrecta'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/SinPermiso'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+  # ---------- reservas ----------
+  /api/reservas:
+    get:
+      tags: [reservas]
+      summary: Franjas ocupadas de una pista en un día
+      description: No incluye quién ha reservado cada franja.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: pista_id
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+          example: 1
+        - name: fecha
+          in: query
+          required: true
+          description: Día en formato AAAA-MM-DD
+          schema:
+            type: string
+            format: date
+          example: '2026-12-01'
+      responses:
+        '200':
+          description: Franjas ocupadas, ordenadas por hora
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    pista_id:
+                      type: integer
+                    inicio:
+                      type: string
+                      format: date-time
+                    fin:
+                      type: string
+                      format: date-time
+        '400':
+          $ref: '#/components/responses/PeticionIncorrecta'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+    post:
+      tags: [reservas]
+      summary: Reservar una pista
+      description: >
+        Antes de insertar, la API comprueba que no haya otra reserva de la misma
+        pista que se solape con la franja pedida. Si la hay, responde 409.
+        Máximo 3 horas y siempre en el futuro.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NuevaReserva'
+      responses:
+        '201':
+          description: Reserva creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reserva'
+        '400':
+          $ref: '#/components/responses/PeticionIncorrecta'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '409':
+          description: La pista ya está reservada en ese horario
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+  /api/reservas/mias:
+    get:
+      tags: [reservas]
+      summary: Mis reservas
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Reservas del usuario, las más próximas primero
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    pista_id:
+                      type: integer
+                    pista:
+                      type: string
+                      description: Nombre de la pista
+                    inicio:
+                      type: string
+                      format: date-time
+                    fin:
+                      type: string
+                      format: date-time
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+  /api/reservas/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    delete:
+      tags: [reservas]
+      summary: Cancelar una reserva
+      description: Solo el dueño de la reserva o un administrador.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Reserva cancelada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensaje'
+        '400':
+          $ref: '#/components/responses/PeticionIncorrecta'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/SinPermiso'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+  # ---------- partidos ----------
+  /api/partidos:
+    get:
+      tags: [partidos]
+      summary: Listar partidos
+      description: Todos los partidos, o el historial de un jugador con `usuario_id`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: usuario_id
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+          example: 3
+      responses:
+        '200':
+          description: Partidos, los más recientes primero
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Partido'
+        '400':
+          $ref: '#/components/responses/PeticionIncorrecta'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+    post:
+      tags: [partidos]
+      summary: Registrar un partido
+      description: >
+        Un jugador solo puede registrar partidos en los que ha jugado; el
+        administrador, cualquiera. Se guarda en una transacción
+        (BEGIN/COMMIT/ROLLBACK).
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NuevoPartido'
+      responses:
+        '201':
+          description: Partido creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Partido'
+        '400':
+          $ref: '#/components/responses/PeticionIncorrecta'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/SinPermiso'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+  /api/partidos/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [partidos]
+      summary: Obtener un partido
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: El partido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Partido'
+        '400':
+          $ref: '#/components/responses/PeticionIncorrecta'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+    delete:
+      tags: [partidos]
+      summary: Borrar un partido
+      description: Solo quien lo registró o un administrador.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Partido eliminado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Mensaje'
+        '400':
+          $ref: '#/components/responses/PeticionIncorrecta'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '403':
+          $ref: '#/components/responses/SinPermiso'
+        '404':
+          $ref: '#/components/responses/NoEncontrado'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+  # ---------- ranking ----------
+  /api/ranking:
+    get:
+      tags: [ranking]
+      summary: Clasificación de la liga
+      description: >
+        3 puntos por victoria; a igualdad de puntos, mejor diferencia de sets y
+        después orden alfabético. Solo aparecen jugadores con algún partido.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Clasificación ordenada
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FilaRanking'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+  # ---------- usuarios ----------
+  /api/usuarios:
+    get:
+      tags: [usuarios]
+      summary: Lista de jugadores (id y nombre)
+      description: Para elegir compañeros y rivales. No incluye email ni contraseña.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Jugadores ordenados por nombre
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Jugador'
+        '401':
+          $ref: '#/components/responses/NoAutenticado'
+        '500':
+          $ref: '#/components/responses/ErrorServidor'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+        minimum: 1
+      example: 1
+
+  responses:
+    PeticionIncorrecta:
+      description: Datos de entrada no válidos
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NoAutenticado:
+      description: Falta el token o no es válido o ha caducado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Hay que iniciar sesión
+    SinPermiso:
+      description: El usuario no tiene permiso para esta operación
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: No tienes permiso para esto
+    NoEncontrado:
+      description: El recurso no existe
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    ErrorServidor:
+      description: Error interno (nunca se devuelven detalles)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Error del servidor
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Mensaje de error
+    Mensaje:
+      type: object
+      properties:
+        mensaje:
+          type: string
+          example: Sesión cerrada
+    Usuario:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        nombre:
+          type: string
+          example: Lucía Martín
+        email:
+          type: string
+          format: email
+          example: lucia@padel.local
+        rol:
+          type: string
+          enum: [jugador, admin]
+          example: jugador
+    Jugador:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        nombre:
+          type: string
+          example: Lucía Martín
+    Login:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: lucia@padel.local
+        password:
+          type: string
+          format: password
+          example: padel1234
+    Registro:
+      type: object
+      required: [nombre, email, password]
+      properties:
+        nombre:
+          type: string
+          maxLength: 80
+          example: Nuevo Jugador
+        email:
+          type: string
+          format: email
+          maxLength: 120
+          example: nuevo@padel.local
+        password:
+          type: string
+          format: password
+          minLength: 8
+          maxLength: 72
+          example: unaclavesegura
+    RespuestaAuth:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT que se envía en la cabecera Authorization Bearer (caduca en 2 horas)
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        usuario:
+          $ref: '#/components/schemas/Usuario'
+    Pista:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        nombre:
+          type: string
+          example: Pista 1
+        descripcion:
+          type: string
+          nullable: true
+          example: Cristal, cubierta
+        activa:
+          type: boolean
+          example: true
+    NuevaPista:
+      type: object
+      required: [nombre]
+      properties:
+        nombre:
+          type: string
+          maxLength: 60
+          example: Pista 4
+        descripcion:
+          type: string
+          maxLength: 500
+          nullable: true
+          example: Cristal, exterior
+    Reserva:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 7
+        usuario_id:
+          type: integer
+          example: 2
+        pista_id:
+          type: integer
+          example: 1
+        inicio:
+          type: string
+          format: date-time
+          example: '2026-12-01T17:00:00.000Z'
+        fin:
+          type: string
+          format: date-time
+          example: '2026-12-01T18:30:00.000Z'
+    NuevaReserva:
+      type: object
+      required: [pista_id, inicio, fin]
+      properties:
+        pista_id:
+          type: integer
+          example: 1
+        inicio:
+          type: string
+          format: date-time
+          example: '2026-12-01T17:00:00.000Z'
+        fin:
+          type: string
+          format: date-time
+          example: '2026-12-01T18:30:00.000Z'
+    Partido:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        fecha:
+          type: string
+          format: date
+          example: '2026-11-20'
+        creado_por:
+          type: integer
+          example: 2
+        sets_equipo1:
+          type: integer
+          example: 2
+        sets_equipo2:
+          type: integer
+          example: 1
+        ganador:
+          type: integer
+          enum: [1, 2]
+          example: 1
+        equipo1:
+          type: array
+          items:
+            $ref: '#/components/schemas/Jugador'
+        equipo2:
+          type: array
+          items:
+            $ref: '#/components/schemas/Jugador'
+    NuevoPartido:
+      type: object
+      required: [equipo1, equipo2, sets_equipo1, sets_equipo2]
+      properties:
+        fecha:
+          type: string
+          format: date
+          description: Opcional (por defecto, hoy). No puede ser futura
+          example: '2026-11-27'
+        equipo1:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: integer
+          example: [2, 3]
+        equipo2:
+          type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: integer
+          example: [4, 5]
+        sets_equipo1:
+          type: integer
+          minimum: 0
+          maximum: 3
+          example: 2
+        sets_equipo2:
+          type: integer
+          minimum: 0
+          maximum: 3
+          example: 1
+    FilaRanking:
+      type: object
+      properties:
+        posicion:
+          type: integer
+          example: 1
+        id:
+          type: integer
+          example: 2
+        nombre:
+          type: string
+          example: Lucía Martín
+        jugados:
+          type: integer
+          example: 6
+        ganados:
+          type: integer
+          example: 4
+        perdidos:
+          type: integer
+          example: 2
+        sets_favor:
+          type: integer
+          example: 10
+        sets_contra:
+          type: integer
+          example: 6
+        puntos:
+          type: integer
+          example: 12

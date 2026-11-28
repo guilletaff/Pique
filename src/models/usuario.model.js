@@ -23,4 +23,19 @@ async function buscarPorId(id) {
   return rows[0];
 }
 
-module.exports = { crearUsuario, buscarPorEmail, buscarPorId };
+// Lista pública de jugadores (para elegir compañeros y rivales): sin email ni contraseña
+async function listar() {
+  const { rows } = await pool.query('SELECT id, nombre FROM usuarios ORDER BY nombre');
+  return rows;
+}
+
+// Cuántos de estos ids existen de verdad en la tabla
+async function contarExistentes(ids) {
+  const { rows } = await pool.query(
+    'SELECT COUNT(*)::int AS total FROM usuarios WHERE id = ANY($1::int[])',
+    [ids]
+  );
+  return rows[0].total;
+}
+
+module.exports = { crearUsuario, buscarPorEmail, buscarPorId, listar, contarExistentes };

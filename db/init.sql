@@ -1,6 +1,3 @@
--- Necesario para impedir reservas solapadas en la misma pista
-CREATE EXTENSION IF NOT EXISTS btree_gist;
-
 CREATE TABLE usuarios (
   id            SERIAL PRIMARY KEY,
   nombre        VARCHAR(80)  NOT NULL,
@@ -18,15 +15,15 @@ CREATE TABLE pistas (
   activa      BOOLEAN NOT NULL DEFAULT TRUE
 );
 
+-- El solapamiento de reservas de una misma pista se controla en la API
+-- (consulta previa en reserva.model.js antes de insertar)
 CREATE TABLE reservas (
   id         SERIAL PRIMARY KEY,
   usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
   pista_id   INTEGER NOT NULL REFERENCES pistas(id)   ON DELETE CASCADE,
   inicio     TIMESTAMPTZ NOT NULL,
   fin        TIMESTAMPTZ NOT NULL,
-  CHECK (fin > inicio),
-  -- Dos reservas de la misma pista no pueden solaparse en el tiempo
-  EXCLUDE USING gist (pista_id WITH =, tstzrange(inicio, fin) WITH &&)
+  CHECK (fin > inicio)
 );
 
 CREATE TABLE partidos (

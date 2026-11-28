@@ -7,8 +7,12 @@ function idValido(valor) {
   return Number.isInteger(id) && id > 0 ? id : null;
 }
 
-function datosValidos({ nombre }) {
-  return typeof nombre === 'string' && nombre.trim().length > 0 && nombre.trim().length <= 60;
+function datosValidos({ nombre, descripcion }) {
+  const nombreOk = typeof nombre === 'string' && nombre.trim().length > 0 && nombre.trim().length <= 60;
+  // La descripción es opcional, pero si viene tiene que ser texto razonable
+  const descripcionOk = descripcion === undefined || descripcion === null ||
+    (typeof descripcion === 'string' && descripcion.length <= 500);
+  return nombreOk && descripcionOk;
 }
 
 async function listar(req, res) {
@@ -40,7 +44,7 @@ async function obtener(req, res) {
 
 async function crear(req, res) {
   if (!datosValidos(req.body)) {
-    return res.status(400).json({ error: 'El nombre es obligatorio (máximo 60 caracteres)' });
+    return res.status(400).json({ error: 'El nombre es obligatorio (máximo 60 caracteres) y la descripción, si se indica, debe ser texto de hasta 500 caracteres' });
   }
 
   try {
@@ -62,7 +66,7 @@ async function actualizar(req, res) {
   const id = idValido(req.params.id);
   if (!id) return res.status(400).json({ error: 'El id no es válido' });
   if (!datosValidos(req.body)) {
-    return res.status(400).json({ error: 'El nombre es obligatorio (máximo 60 caracteres)' });
+    return res.status(400).json({ error: 'El nombre es obligatorio (máximo 60 caracteres) y la descripción, si se indica, debe ser texto de hasta 500 caracteres' });
   }
   if (typeof req.body.activa !== 'boolean') {
     return res.status(400).json({ error: 'El campo activa debe ser true o false' });

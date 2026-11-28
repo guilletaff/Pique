@@ -3,10 +3,51 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Padel App</title>
+  <title>Pique · Entrar</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/estilos.css">
+  <script src="/js/comun.js" defer></script>
+  <script src="/js/login.js" defer></script>
 </head>
-<body>
-  <h1>Padel App</h1>
-  <p>Esqueleto del proyecto funcionando.</p>
+<body class="pagina-login">
+  <div class="tarjeta caja-login">
+    <h1>🎾 Pique</h1>
+    <p class="subtitulo">La liga de pádel entre amigos</p>
+
+    <div class="pestanas">
+      <button type="button" id="pestana-login" class="activa">Iniciar sesión</button>
+      <button type="button" id="pestana-registro">Crear cuenta</button>
+    </div>
+
+    <div id="mensaje"></div>
+
+    <form id="form-login" novalidate>
+      <div class="campo">
+        <label for="login-email">Email</label>
+        <input type="email" id="login-email" name="email" autocomplete="email" required>
+      </div>
+      <div class="campo">
+        <label for="login-password">Contraseña</label>
+        <input type="password" id="login-password" name="password" autocomplete="current-password" required>
+      </div>
+      <button type="submit" class="boton boton-ancho">Entrar</button>
+    </form>
+
+    <form id="form-registro" class="oculto" novalidate>
+      <div class="campo">
+        <label for="registro-nombre">Nombre</label>
+        <input type="text" id="registro-nombre" name="nombre" maxlength="80" autocomplete="name" required>
+      </div>
+      <div class="campo">
+        <label for="registro-email">Email</label>
+        <input type="email" id="registro-email" name="email" maxlength="120" autocomplete="email" required>
+      </div>
+      <div class="campo">
+        <label for="registro-password">Contraseña (mínimo 8 caracteres)</label>
+        <input type="password" id="registro-password" name="password" minlength="8" maxlength="72" autocomplete="new-password" required>
+      </div>
+      <button type="submit" class="boton boton-ancho">Crear cuenta</button>
+    </form>
+  </div>
 </body>
 </html>

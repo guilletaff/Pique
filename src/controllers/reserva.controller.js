@@ -1,7 +1,6 @@
 const Reserva = require('../models/reserva.model');
 const Pista = require('../models/pista.model');
 
-const EXCLUSION_VIOLATION = '23P01'; // la base de datos detectó un solapamiento
 const DURACION_MAXIMA_MS = 3 * 60 * 60 * 1000; // 3 horas
 const FECHA_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -39,6 +38,10 @@ async function crear(req, res) {
     if (!pista) return res.status(404).json({ error: 'Pista no encontrada' });
     if (!pista.activa) return res.status(400).json({ error: 'La pista no está disponible' });
 
+    if (await Reserva.haySolape(pistaId, inicio.toISOString(), fin.toISOString())) {
+      return res.status(409).json({ error: 'La pista ya está reservada en ese horario' });
+    }
+
     const reserva = await Reserva.crear({
       usuarioId: req.usuario.id,
       pistaId,
@@ -47,9 +50,6 @@ async function crear(req, res) {
     });
     res.status(201).json(reserva);
   } catch (err) {
-    if (err.code === EXCLUSION_VIOLATION) {
-      return res.status(409).json({ error: 'La pista ya está reservada en ese horario' });
-    }
     console.error(err);
     res.status(500).json({ error: 'Error del servidor' });
   }
