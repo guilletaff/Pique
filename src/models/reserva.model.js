@@ -41,8 +41,22 @@ async function listarPorPistaYFecha(pistaId, fecha) {
   return rows;
 }
 
+// ¿Hay alguna reserva de esa pista que se solape con la franja [inicio, fin)?
+// Dos franjas se solapan si una empieza antes de que acabe la otra y viceversa.
+async function haySolape(pistaId, inicio, fin) {
+  const { rows } = await pool.query(
+    `SELECT COUNT(*)::int AS total
+     FROM reservas
+     WHERE pista_id = $1
+       AND inicio < $3
+       AND fin > $2`,
+    [pistaId, inicio, fin]
+  );
+  return rows[0].total > 0;
+}
+
 async function eliminar(id) {
   await pool.query('DELETE FROM reservas WHERE id = $1', [id]);
 }
 
-module.exports = { crear, buscarPorId, listarPorUsuario, listarPorPistaYFecha, eliminar };
+module.exports = { crear, buscarPorId, listarPorUsuario, listarPorPistaYFecha, haySolape, eliminar };
