@@ -13,7 +13,7 @@ Reparto orientativo para tres personas: **A** (introducción y arquitectura), **
 
 ## Diapositivas
 
-1. **Portada.** Pique · nombres del grupo · asignatura.
+1. **Portada.** Pique · Guillermo Taffouraud, Oriol García Miró y Rodrigo González · Programación en servidores web.
 2. **El problema.** Una liga de pádel real entre amigos: reservas por mensajes, resultados en una hoja de cálculo, ranking a mano. Qué queremos: reservar sin choques, apuntar resultados y ver el ranking al momento.
 3. **Qué hace la app.** Tabla jugador / administrador (la del README).
 4. **Arquitectura.** Diagrama navegador → Express (rutas → middlewares → controladores → modelos) → PostgreSQL, todo en dos contenedores Docker.
